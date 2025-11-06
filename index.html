@@ -260,7 +260,87 @@
 </script>
 <!---------------top button-------------->
 <!---------------Chat button-------------->
-<button><i class="fa-regular fa-comment"></i></button>
+
+<button id="goTopBtn" class="chat-toggle" aria-label="Open chat">
+  <i class="fa-regular fa-comment"></i>
+</button>
+<!-- ====== 2) CSS: paste in your <head> or main CSS file ====== -->
+<style>
+/* make sure .chat-wrap is positioned fixed at bottom-right */
+.chat-wrap {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  transition: transform 220ms ease, bottom 220ms ease;
+  z-index: 9999;
+}
+
+/* lifted state: move chat up so it doesn't overlap the button */
+.chat-wrap.lift {
+  transform: translateY(-72px); /* adjust -72px if needed (button height + gap) */
+}
+
+/* mobile tweak: smaller upward shift on small screens */
+@media (max-width: 480px) {
+  .chat-wrap {
+    right: 12px;
+    bottom: 12px;
+  }
+  .chat-wrap.lift {
+    transform: translateY(-56px);
+  }
+}
+
+/* optional: style for the button so it's visible */
+#goTopBtn.chat-toggle {
+  position: fixed;
+  left: 16px;           /* change as per your layout */
+  bottom: 16px;
+  z-index: 9998;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 0;
+  background: #0b63ff;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(11,99,255,0.12);
+}
+</style>
+<!-- ====== 3) JS: paste before closing </body> tag ====== -->
+<script>
+(function(){
+  // change selector if your chat container has a different id/class
+  const chat = document.querySelector('.chat-wrap'); 
+  const btn  = document.getElementById('goTopBtn');
+
+  if(!chat || !btn) {
+    // console.warn('chat-wrap or goTopBtn not found');
+    return;
+  }
+
+  // IntersectionObserver: when the button becomes visible in viewport, lift the chat
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        chat.classList.add('lift');
+      } else {
+        chat.classList.remove('lift');
+      }
+    });
+  }, {
+    root: null,
+    threshold: 0.05 // 5% visible -> treat as visible
+  });
+
+  observer.observe(btn);
+
+  // Optional: if you want the chat to also lift when user focuses the button (keyboard)
+  btn.addEventListener('focus', ()=> chat.classList.add('lift'));
+  btn.addEventListener('blur',  ()=> chat.classList.remove('lift'));
+
+})();
+</script>
+
 <!---------------Chat button-------------->
 
 <!---------------text change-------------->
@@ -292,6 +372,7 @@
 
 <!---------------text change-------------->
  
+
 
 
 
