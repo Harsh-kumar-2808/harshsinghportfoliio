@@ -263,197 +263,259 @@
 </script>
 <!---------------top button-------------->
 <!---------------Chat button-------------->
-<!-- ================= CHAT BUTTON + CHAT WINDOW ================= -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Harsh Chat Test</title>
 
-<!-- Chat toggle button -->
-<button id="chatBtn" aria-label="Open Harsh Chat">
-  <i class="fa-regular fa-comment"></i>
-</button>
+  <!-- Font Awesome (icon) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Chat window -->
-<div class="chat-box" id="chatBox">
-  <div class="chat-header">
-    <span>Chat with Harsh’s Assistant 🤖</span>
-    <button id="closeChat" aria-label="Close chat">&times;</button>
-  </div>
-  <div class="chat-body" id="chatBody"></div>
-  <div class="chat-input">
-    <input type="text" id="userMsg" placeholder="Ask about Harsh..." />
-    <button id="sendMsg">Send</button>
-  </div>
-</div>
-
-<!-- ================== STYLES ================== -->
-<style>
-/* Chat button */
-#chatBtn {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  background: #0b63ff;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  font-size: 22px;
-  cursor: pointer;
-  z-index: 10000;
-  box-shadow: 0 4px 12px rgba(11,99,255,0.3);
-  transition: transform 0.25s ease;
-}
-#chatBtn:hover { transform: scale(1.1); }
-
-/* Chat window hidden by default */
-.chat-box {
-  position: fixed;
-  right: 20px;
-  bottom: 90px;
-  width: 360px;
-  max-width: 95%;
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 9999;
-}
-
-/* visible state */
-.chat-box.active { display: flex; }
-
-/* header */
-.chat-header {
-  background: #0b63ff;
-  color: white;
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-}
-.chat-header button {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-/* body */
-.chat-body {
-  height: 320px;
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: #f7f9ff;
-}
-.msg {
-  max-width: 80%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 14px;
-  line-height: 1.4;
-}
-.user { background: #dbe5ff; align-self: flex-end; }
-.bot  { background: #fff; border: 1px solid #eee; align-self: flex-start; }
-
-/* input area */
-.chat-input {
-  display: flex;
-  border-top: 1px solid #ddd;
-}
-.chat-input input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  outline: none;
-}
-.chat-input button {
-  background: #0b63ff;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  cursor: pointer;
-}
-
-@media(max-width:480px){
-  #chatBtn{right:15px;bottom:15px;}
-  .chat-box{right:10px;bottom:80px;width:92%;}
-}
-</style>
-
-<!-- ================== SCRIPT ================== -->
-<script>
-(() => {
-
-  // -------- Chat data (only about Harsh Kumar) --------
-  const responses = [
-    { key: ["who are you","about harsh","introduce"], ans: "I'm Harsh Kumar's AI assistant. Harsh Kumar is a BCA graduate (Study Hall College, 2024) skilled in web development, Java, C++, and Python." },
-    { key: ["education","degree","college","study"], ans: "Harsh completed his Bachelor of Computer Applications (BCA) from Study Hall College in 2024." },
-    { key: ["skills","languages","tech","tools"], ans: "Harsh’s skills include Java, C++, Python, HTML, CSS, JavaScript, React, Node.js, and database management." },
-    { key: ["projects","portfolio","work","website"], ans: "Harsh has developed modern responsive websites and full-stack applications. Check his portfolio section for examples." },
-    { key: ["contact","phone","email"], ans: "You can contact Harsh at 6386931879 or email Mr.harshkumar2808@gmail.com." },
-    { key: ["linkedin","social"], ans: "Here’s Harsh’s LinkedIn: www.linkedin.com/in/harsh-kumar-bb8ba8317" },
-    { key: ["job","career","hire"], ans: "Harsh is seeking a Full Stack Web Developer role where he can apply his skills in frontend and backend development." }
-  ];
-  const defaultAns = "Sorry, I can only answer questions about Harsh Kumar (education, skills, projects, contact, etc.).";
-
-  // -------- Elements --------
-  const chatBtn = document.getElementById("chatBtn");
-  const chatBox = document.getElementById("chatBox");
-  const closeChat = document.getElementById("closeChat");
-  const chatBody = document.getElementById("chatBody");
-  const userMsg = document.getElementById("userMsg");
-  const sendMsg = document.getElementById("sendMsg");
-
-  // -------- Toggle chat visibility --------
-  chatBtn.addEventListener("click", () => {
-    chatBox.classList.toggle("active");
-    if(chatBox.classList.contains("active")) {
-      chatBody.innerHTML = ""; // reset chat on open
-      addMsg("bot", "Hi! 👋 I'm Harsh's assistant. Ask me anything about Harsh Kumar.");
+  <!-- === CHAT STYLES (unique names to avoid conflicts) === -->
+  <style>
+    /* container */
+    .hk-chat-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #0b63ff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 100000; /* very high to be on top */
+      box-shadow: 0 6px 24px rgba(11,99,255,0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-  });
-  closeChat.addEventListener("click", ()=> chatBox.classList.remove("active"));
+    .hk-chat-btn:hover { transform: scale(1.06); }
 
-  // -------- Send message --------
-  sendMsg.addEventListener("click", handleSend);
-  userMsg.addEventListener("keypress", e => { if(e.key==="Enter") handleSend(); });
+    .hk-chat-window {
+      position: fixed;
+      right: 20px;
+      bottom: 90px;
+      width: 360px;
+      max-width: 95%;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100000;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    .hk-chat-window.hk-active { display: flex; }
 
-  function handleSend(){
-    const msg = userMsg.value.trim();
-    if(!msg) return;
-    addMsg("user", msg);
-    userMsg.value="";
-    setTimeout(()=> addMsg("bot", getResponse(msg)), 400);
-  }
+    /* header */
+    .hk-chat-header {
+      background: linear-gradient(90deg,#0b63ff,#0a8fff);
+      color: #fff;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .hk-chat-close {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
 
-  // -------- Get AI response (local match) --------
-  function getResponse(q){
-    q = q.toLowerCase();
-    for(const r of responses){
-      for(const k of r.key){
-        if(q.includes(k)) return r.ans;
+    /* body */
+    .hk-chat-body {
+      height: 320px;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: linear-gradient(180deg,#f7f9ff,#f3f6ff);
+    }
+
+    /* message bubble (explicit colors & sizes) */
+    .hk-msg {
+      max-width: 80%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      box-sizing: border-box;
+      word-wrap: break-word;
+      color: #111 !important; /* force readable text color */
+      -webkit-font-smoothing: antialiased;
+    }
+    .hk-msg.hk-user {
+      background: #dbe8ff;
+      align-self: flex-end;
+      color: #04102a !important;
+      border-bottom-right-radius: 8px;
+    }
+    .hk-msg.hk-bot {
+      background: #ffffff;
+      border: 1px solid #e9eefc;
+      align-self: flex-start;
+      color: #111 !important;
+      border-bottom-left-radius: 8px;
+    }
+
+    /* small meta / note text */
+    .hk-note {
+      font-size: 12px;
+      color: #556;
+      text-align: center;
+      padding: 6px 12px;
+    }
+
+    /* input area */
+    .hk-chat-input {
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid #e7eefc;
+      padding: 8px;
+      background: #fff;
+    }
+    .hk-chat-input input[type="text"]{
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e6ecff;
+      outline: none;
+      font-size: 14px;
+    }
+    .hk-chat-input button.hk-send {
+      padding: 10px 14px;
+      background: #0b63ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* make sure scrollbars visible and not overlapped */
+    .hk-chat-body::-webkit-scrollbar { width: 10px; }
+    .hk-chat-body::-webkit-scrollbar-thumb { background: rgba(11,99,255,0.18); border-radius: 8px; }
+
+    @media(max-width:480px){
+      .hk-chat-window { right: 12px; bottom: 80px; width: 92%; }
+      .hk-chat-btn { right: 12px; bottom: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== CHAT BUTTON ===== -->
+  <button id="hkChatBtn" class="hk-chat-btn" aria-label="Open Harsh Chat">
+    <i class="fa-regular fa-comment"></i>
+  </button>
+
+  <!-- ===== CHAT WINDOW ===== -->
+  <div id="hkChatWindow" class="hk-chat-window" role="dialog" aria-label="Chat with Harsh's Assistant">
+    <div class="hk-chat-header">
+      <div>Chat with Harsh’s Assistant 🤖</div>
+      <button id="hkClose" class="hk-chat-close" aria-label="Close chat">&times;</button>
+    </div>
+
+    <div id="hkBody" class="hk-chat-body" aria-live="polite">
+      <!-- example / initial messages so you can see content immediately -->
+      <div class="hk-msg hk-bot">👋 Hi! I'm Harsh's assistant. Ask me about Harsh's education, skills, projects, or contact info.</div>
+      <div class="hk-msg hk-user">aap kon?</div>
+      <div class="hk-msg hk-bot">I am Harsh Kumar's AI assistant. Harsh is a BCA graduate and a full-stack web developer.</div>
+    </div>
+
+    <div class="hk-chat-input">
+      <input id="hkInput" type="text" placeholder="Ask about Harsh..." aria-label="Type your question"/>
+      <button id="hkSend" class="hk-send">Send</button>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT: chat logic (local responses only about Harsh) ===== -->
+  <script>
+    (function(){
+      // ------- Data (only about Harsh) -------
+      const RESPONSES = [
+        { keys:["who are you","about harsh","introduce","aap kon"], ans: "I'm Harsh Kumar's AI assistant. Harsh Kumar is a BCA graduate (Study Hall College, 2024) skilled in web development, Java, C++, and Python."},
+        { keys:["education","degree","college","bca","study"], ans: "Education: Bachelor of Computer Applications (BCA) from Study Hall College, completed in 2024."},
+        { keys:["skills","languages","tech","tools"], ans: "Skills: Java, C++, Python, HTML, CSS, JavaScript, React, Node.js, and database management."},
+        { keys:["projects","portfolio","website","work"], ans: "Harsh builds modern responsive websites and full-stack web applications. Check the portfolio section for examples."},
+        { keys:["contact","phone","email"], ans: "Contact: Phone — 6386931879. Email — Mr.harshkumar2808@gmail.com."},
+        { keys:["linkedin","social"], ans: "LinkedIn: www.linkedin.com/in/harsh-kumar-bb8ba8317"},
+        { keys:["job","hire","career"], ans: "Harsh is seeking Full Stack Web Developer roles. He focuses on frontend + backend development."}
+      ];
+      const DEFAULT = "Sorry — I can only answer questions specifically about Harsh Kumar (education, skills, projects, contact).";
+
+      // ------- Elements -------
+      const btn = document.getElementById('hkChatBtn');
+      const win = document.getElementById('hkChatWindow');
+      const closeBtn = document.getElementById('hkClose');
+      const body = document.getElementById('hkBody');
+      const input = document.getElementById('hkInput');
+      const send = document.getElementById('hkSend');
+
+      // Toggle open/close
+      btn.addEventListener('click', () => {
+        win.classList.toggle('hk-active');
+        if(win.classList.contains('hk-active')) {
+          // focus input for convenience
+          input.focus();
+        }
+      });
+      closeBtn.addEventListener('click', () => win.classList.remove('hk-active'));
+
+      // send handler
+      send.addEventListener('click', handleSend);
+      input.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSend(); });
+
+      function handleSend(){
+        const text = input.value.trim();
+        if(!text) return;
+        addMessage('user', text);
+        input.value = '';
+        setTimeout(()=> {
+          const reply = getReply(text);
+          addMessage('bot', reply);
+        }, 300);
       }
-    }
-    return defaultAns;
-  }
 
-  // -------- Add message to chat --------
-  function addMsg(who, text){
-    const div = document.createElement("div");
-    div.className = `msg ${who}`;
-    div.textContent = text;
-    chatBody.appendChild(div);
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }
+      // matching
+      function getReply(q){
+        const low = q.toLowerCase();
+        for(const r of RESPONSES){
+          for(const k of r.keys){
+            if(low.includes(k)) return r.ans;
+          }
+        }
+        return DEFAULT;
+      }
 
-})();
-</script>
+      // add message to DOM
+      function addMessage(who, txt){
+        const d = document.createElement('div');
+        d.className = 'hk-msg ' + (who === 'user' ? 'hk-user' : 'hk-bot');
+        d.textContent = txt;
+        body.appendChild(d);
+        body.scrollTop = body.scrollHeight;
+      }
+
+      // ensure visible when opened (in case CSS conflicts)
+      // if your site has CSS that hides scrollbars or sets colors globally, this makes the chat appear on top
+      win.style.zIndex = 100000;
+    })();
+  </script>
+
+</body>
+</html>
+
 <!---------------Chat button-------------->
 
 <!---------------text change-------------->
@@ -485,6 +547,7 @@
 
 <!---------------text change-------------->
  
+
 
 
 
