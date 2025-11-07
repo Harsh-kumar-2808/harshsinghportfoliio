@@ -263,231 +263,216 @@
 </script>
 <!---------------top button-------------->
 <!---------------Chat button-------------->
-<!-- ================= HARSH CHAT: RESETTING, MULTILANG, DETAILED INFO ================= -->
+<!-- ===== HK: Self-contained Chat (conflict-safe) ===== -->
+<!-- Make sure Font Awesome is in <head>:
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+-->
 
-<!-- Chat toggle button -->
-<button id="chatBtn" aria-label="Open Harsh Chat" style="position:fixed; right:20px; bottom:20px; z-index:100000;">
-  <i class="fa-regular fa-comment" style="font-size:22px;color:#fff;background:#0b63ff;padding:12px;border-radius:50%"></i>
-</button>
+<!-- Chat HTML -->
+<div id="hk_chat_root" style="all:initial; position:fixed; right:20px; bottom:20px; z-index:2147483000; font-family:Arial, Helvetica, sans-serif;">
+  <!-- Button -->
+  <button id="hk_btn" aria-label="Open chat"
+    style="all:initial; display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:#0b63ff; color:#fff; border:0; cursor:pointer; box-shadow:0 8px 20px rgba(11,99,255,0.25);">
+    <i class="fa-regular fa-comment" style="font-size:20px;"></i>
+  </button>
 
-<!-- Chat window -->
-<div id="chatBox" class="hk-chat-window" style="position:fixed;right:20px;bottom:90px;width:360px;max-width:95%;z-index:100000;display:none;">
-  <div style="background:#0b63ff;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:600;border-radius:10px 10px 0 0;">
-    <div>Chat with Harsh’s Assistant 🤖</div>
-    <button id="closeChat" aria-label="Close chat" style="background:transparent;border:0;color:#fff;font-size:20px;cursor:pointer;">&times;</button>
-  </div>
+  <!-- Window (hidden by default) -->
+  <div id="hk_window" role="dialog" aria-label="Chat with Harsh" 
+       style="all:initial; display:none; width:380px; max-width:92vw; height:480px; box-shadow:0 18px 48px rgba(0,0,0,0.18); border-radius:12px; overflow:hidden; background:#fff; margin-bottom:12px;">
+    <!-- header -->
+    <div style="all:initial; height:52px; background:linear-gradient(90deg,#0b63ff,#0a8fff); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-weight:600;">
+      <div style="all:initial; color:#fff; font-size:15px;">Chat with Harsh's Assistant 🤖</div>
+      <button id="hk_close" aria-label="Close" style="all:initial; background:transparent; border:0; color:#fff; font-size:20px; cursor:pointer;">&times;</button>
+    </div>
 
-  <div id="chatBody" style="height:320px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,#f7f9ff,#f3f6ff);"></div>
+    <!-- body -->
+    <div id="hk_body" style="all:initial; height:360px; overflow:auto; padding:12px; background:#f7f9ff; display:flex; flex-direction:column; gap:10px;">
+      <!-- initial greeting will be injected by JS -->
+    </div>
 
-  <div style="display:flex;border-top:1px solid #e7eefc;padding:8px;background:#fff;border-radius:0 0 10px 10px;">
-    <input id="chatInput" type="text" placeholder="Harsh ke baare me poochho..." style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6ecff;outline:none;font-size:14px;" />
-    <button id="chatSend" style="background:#0b63ff;color:#fff;border:0;padding:10px 12px;margin-left:8px;border-radius:8px;cursor:pointer;">Send</button>
+    <!-- input -->
+    <div style="all:initial; display:flex; gap:8px; padding:10px; border-top:1px solid #eef5ff; background:#fff;">
+      <input id="hk_input" type="text" placeholder="Harsh ke baare me poochho..." 
+             style="all:initial; box-sizing:border-box; flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e6ecff; outline:none; font-size:14px;" />
+      <button id="hk_send" style="all:initial; padding:10px 14px; border-radius:8px; border:0; background:#0b63ff; color:#fff; cursor:pointer;">Send</button>
+    </div>
   </div>
 </div>
 
+<!-- JS: conflict-safe logic with console logs -->
 <script>
 (function(){
+  // debug prefix
+  const DBG = (...args) => { try{ console.log('[HK-CHAT]', ...args); } catch(e){} };
 
-  /* ======= 1) UPDATE THESE DETAILS AS NEEDED =======
-     Edit values below to change what the assistant says about you.
-  ===================================================*/
+  // Elements
+  const root = document.getElementById('hk_chat_root');
+  const btn = document.getElementById('hk_btn');
+  const win = document.getElementById('hk_window');
+  const closeBtn = document.getElementById('hk_close');
+  const body = document.getElementById('hk_body');
+  const input = document.getElementById('hk_input');
+  const send = document.getElementById('hk_send');
+
+  if(!root || !btn || !win || !body || !input || !send){
+    DBG('One or more chat elements not found. Aborting.');
+    return;
+  }
+  DBG('Elements found. Initializing chat.');
+
+  // ======= Info (edit these values) =======
   const info = {
     name: "Harsh Kumar",
-    summary_en: "I am a full-stack web developer with a BCA degree, focused on modern responsive web apps using React and Node.js.",
-    summary_hi: "मैं एक फुल-स्टैक वेब डेवलपर हूँ, BCA डिग्री के साथ। मैं React और Node.js का उपयोग करके आधुनिक वेब ऐप बनाता हूँ।",
-    school: { name: "ABC High School, Fazilka", year: "2018 (Class 12 passed)" },        // change
-    pastCollege: { name: "Study Hall College (BCA - completed)", year: 2024 },          // change
-    currentCollege: { name: "Chandigarh University (MCA - ongoing)", year: "2025 - present" }, // change or remove
-    skills: ["Java", "C++", "Python", "HTML", "CSS", "JavaScript", "React", "Node.js", "MongoDB"],
-    projects: [
-      { title: "Portfolio Website", desc: "Personal portfolio showcasing projects and contact, built with React." },
-      { title: "E-commerce App", desc: "Full-stack e-commerce app with Node.js backend and MongoDB." }
-    ],
-    openToWork: true,
-    contact: { phone: "6386931879", email: "Mr.harshkumar2808@gmail.com", linkedin: "www.linkedin.com/in/harsh-kumar-bb8ba8317" }
+    summary_en: "I am a full-stack web developer with a BCA degree, building modern responsive apps using React and Node.js.",
+    summary_hi: "मैं एक फुल-स्टैक वेब डेवलपर हूँ, जो React और Node.js से आधुनिक वेब ऐप बनाता हूँ।",
+    school: { name: "St. Mary's Sr. Sec. School, Fazilka", year: "Class 12 - 2018" },
+    pastCollege: { name: "Study Hall College (BCA)", year: 2024 },
+    currentCollege: { name: "Chandigarh University (MCA - ongoing)", year: "2025 - present" },
+    skills: ["Java","C++","Python","HTML","CSS","JavaScript","React","Node.js","MongoDB"],
+    projects: [{ title:"Portfolio Website", desc:"Personal portfolio in React." }, { title:"E-commerce App", desc:"Node.js + MongoDB backend." }],
+    contact: { phone:"6386931879", email:"Mr.harshkumar2808@gmail.com", linkedin:"www.linkedin.com/in/harsh-kumar-bb8ba8317" },
+    openToWork: true
   };
-  /* ======= END of customizable info ======= */
 
-
-  /* ======= 2) Utility: language detection ======= */
+  // language detection (same as before)
   function detectLanguage(text){
     const hasDevanagari = /[ऀ-ॿ]/;
     if(hasDevanagari.test(text)) return "hindi";
-    // simple Hinglish keyword check
-    const hinglishTokens = ["kya","kaise","batao","kon","mera","tum","harsh","ke","hai","kahan","kab","kaunsa","school","college","padha"];
+    const hinglishTokens = ["kya","kaise","batao","kon","mera","tum","harsh","ke","hai","kahan","kab","school","college","padha","kya","kr"];
     const low = text.toLowerCase();
     for(const t of hinglishTokens) if(low.includes(t)) return "hinglish";
     return "english";
   }
 
-  /* ======= 3) Answer generator returns string in detected language ======= */
   function generateAnswer(msg){
     const lang = detectLanguage(msg);
     const q = msg.toLowerCase();
+    const skills = info.skills.join(", ");
+    const projects_en = info.projects.map(p=> `${p.title}: ${p.desc}`).join(" ; ");
+    const projects_hi = info.projects.map(p=> `${p.title} — ${p.desc}`).join(" ; ");
 
-    // HELPFUL helpers for building text
-    const skillsList = info.skills.join(", ");
-    const projectsList_en = info.projects.map(p=> `${p.title} — ${p.desc}`).join("; ");
-    const projectsList_hi = info.projects.map(p=> `${p.title} — ${p.desc}`).join(" ; ");
-
-    // ---------- HINDI ----------
     if(lang === "hindi"){
-      if(/who|kon|konse|kaun|aap kon/i.test(q) || q.includes("aap kon") || q.includes("kaun")) 
-        return `मैं ${info.name} का एआई असिस्टेंट हूँ। ${info.name} एक फुल-स्टैक वेब डेवलपर हैं।`;
-      if(q.includes("school") || q.includes("school se") || q.includes("kaha padha") || q.includes("school kya"))
-        return `School: ${info.school.name} (${info.school.year}).`;
-      if(q.includes("college") && q.includes("past") || q.includes("pada") || q.includes("completed") || q.includes("bca") || q.includes("pastcollege"))
-        return `College (completed): ${info.pastCollege.name} — ${info.pastCollege.year}.`;
-      if(q.includes("abhi") || q.includes("current") || q.includes("chal raha") || q.includes("current college") || q.includes("present"))
-        return `Current college / studies: ${info.currentCollege.name} — ${info.currentCollege.year}.`;
-      if(q.includes("skill") || q.includes("kya aata") || q.includes("ky aata") || q.includes("kya kar sakte"))
-        return `Skills: ${skillsList}.`;
-      if(q.includes("project") || q.includes("portfolio") || q.includes("website"))
-        return `प्रोजेक्ट्स: ${projectsList_hi}`;
-      if(q.includes("contact") || q.includes("phone") || q.includes("email") || q.includes("sampark"))
-        return `संपर्क: फ़ोन ${info.contact.phone}, ईमेल ${info.contact.email}. LinkedIn: ${info.contact.linkedin}`;
-      if(q.includes("open") && q.includes("work") || q.includes("naukri") || q.includes("job"))
-        return info.openToWork ? "हाँ — Harsh नौकरी के लिए खुला है।" : "अभी Harsh नौकरी की तलाश में नहीं हैं।";
-      if(q.includes("summary") || q.includes("baare") || q.includes("bataye") || q.includes("ka kare"))
-        return info.summary_hi || "मैं एक वेब डेवलपर हूँ — अधिक जानकारी के लिए पूछें।";
-      // fallback
-      return "माफ़ कीजिये — मैं केवल हर्ष कुमार के बारे में जानकारी दे सकता हूँ। कृपया हर्ष से जुड़ा प्रश्न पूछें।";
+      if(q.includes("kon")||q.includes("kaun")) return `मैं ${info.name} का एआई असिस्टेंट हूँ। ${info.name} एक फुल-स्टैक वेब डेवलपर हैं।`;
+      if(q.includes("school")||q.includes("school se")||q.includes("padha")) return `स्कूल: ${info.school.name} (${info.school.year})`;
+      if(q.includes("college") && (q.includes("past")||q.includes("bca")||q.includes("complete")||q.includes("pura")||q.includes("complete"))) return `प्रिय कॉलेज (completed): ${info.pastCollege.name} — ${info.pastCollege.year}`;
+      if(q.includes("abhi")||q.includes("current")||q.includes("present")) return `वर्तमान पढ़ाई: ${info.currentCollege.name} — ${info.currentCollege.year}`;
+      if(q.includes("skill")||q.includes("kya aata")||q.includes("aata")) return `Skills: ${skills}`;
+      if(q.includes("project")||q.includes("portfolio")||q.includes("website")) return `प्रोजेक्ट्स: ${projects_hi}`;
+      if(q.includes("contact")||q.includes("phone")||q.includes("email")||q.includes("sampark")) return `संपर्क: ${info.contact.phone} | ${info.contact.email}`;
+      if((q.includes("open")&&q.includes("work"))||q.includes("naukri")||q.includes("job")) return info.openToWork ? "हाँ — Harsh job ke liye open hain." : "Harsh अभी job नहीं ढूँढ रहे।";
+      if(q.includes("summary")||q.includes("baare")||q.includes("bataye")) return info.summary_hi;
+      return "क्षमा करें — मैं केवल हर्ष कुमार के बारे में जानकारी दे सकता हूँ।";
     }
 
-    // ---------- HINGLISH ----------
     if(lang === "hinglish"){
-      if(q.includes("kon") || q.includes("kaun") || q.includes("aap kon"))
-        return `Main ${info.name} ka AI assistant hoon. ${info.name} ek full-stack web developer hain.`;
-      if(q.includes("school") || q.includes("kahan padha") || q.includes("school kya"))
-        return `School: ${info.school.name} (${info.school.year}).`;
-      if(q.includes("college") && (q.includes("past") || q.includes("complete") || q.includes("bca") || q.includes("pura")))
-        return `Past college: ${info.pastCollege.name} — ${info.pastCollege.year}.`;
-      if(q.includes("current") || q.includes("abhi") || q.includes("present"))
-        return `Current college: ${info.currentCollege.name} — ${info.currentCollege.year}.`;
-      if(q.includes("skill") || q.includes("kya aata") || q.includes("kya kar sakta"))
-        return `Skills: ${skillsList}.`;
-      if(q.includes("project") || q.includes("portfolio"))
-        return `Projects: ${projectsList_en}`;
-      if(q.includes("contact") || q.includes("number") || q.includes("mail"))
-        return `Contact: ${info.contact.phone} | ${info.contact.email} | ${info.contact.linkedin}`;
-      if(q.includes("open") && q.includes("work") || q.includes("naukri") || q.includes("job"))
-        return info.openToWork ? "Yes — Harsh is open to work." : "Harsh is not looking for work right now.";
-      if(q.includes("summary") || q.includes("baare") || q.includes("about"))
-        return info.summary_en;
+      if(q.includes("kon")||q.includes("kaun")) return `Main ${info.name} ka AI assistant hoon. ${info.name} ek full-stack web developer hain.`;
+      if(q.includes("school")||q.includes("padha")) return `School: ${info.school.name} (${info.school.year})`;
+      if((q.includes("college") && (q.includes("past")||q.includes("bca")||q.includes("complete")))) return `Past college: ${info.pastCollege.name} — ${info.pastCollege.year}`;
+      if(q.includes("current")||q.includes("abhi")) return `Current college: ${info.currentCollege.name} — ${info.currentCollege.year}`;
+      if(q.includes("skill")||q.includes("kya aata")) return `Skills: ${skills}`;
+      if(q.includes("project")||q.includes("portfolio")) return `Projects: ${projects_en}`;
+      if(q.includes("contact")||q.includes("number")||q.includes("mail")) return `Contact: ${info.contact.phone} | ${info.contact.email}`;
+      if((q.includes("open")&&q.includes("work"))||q.includes("naukri")||q.includes("job")) return info.openToWork ? "Yes — Harsh is open to work." : "Harsh not looking for job now.";
+      if(q.includes("summary")||q.includes("about")||q.includes("baare")) return info.summary_en;
       return "Main sirf Harsh Kumar ke baare mein bata sakta hoon — please ask about Harsh.";
     }
 
-    // ---------- ENGLISH ----------
+    // english
     if(lang === "english"){
-      if(/who|what|introduce/.test(q) || q.includes("who are you"))
-        return `I am ${info.name}'s AI assistant. ${info.name} is a full-stack web developer.`;
-      if(q.includes("school") || q.includes("high school") || q.includes("where did he study school"))
-        return `School: ${info.school.name} (${info.school.year}).`;
-      if(q.includes("past") && q.includes("college") || q.includes("bca") || q.includes("completed"))
-        return `College (completed): ${info.pastCollege.name} — ${info.pastCollege.year}.`;
-      if(q.includes("current") && q.includes("college") || q.includes("present") || q.includes("now studying"))
-        return `Current college / studies: ${info.currentCollege.name} — ${info.currentCollege.year}.`;
-      if(q.includes("skills") || q.includes("technologies") || q.includes("can do"))
-        return `Skills: ${skillsList}.`;
-      if(q.includes("projects") || q.includes("portfolio"))
-        return `Projects: ${projectsList_en}`;
-      if(q.includes("contact") || q.includes("email") || q.includes("phone"))
-        return `Contact: ${info.contact.phone} | ${info.contact.email} | ${info.contact.linkedin}`;
-      if(q.includes("open") && q.includes("work") || q.includes("looking") && q.includes("job"))
-        return info.openToWork ? "Harsh is open to work." : "Harsh is not currently looking for work.";
-      if(q.includes("summary") || q.includes("about"))
-        return info.summary_en;
-      return "Sorry — I can only answer questions related to Harsh Kumar. Please ask about his education, skills, projects or contact.";
+      if(q.includes("who")||q.includes("introduce")||q.includes("who are you")) return `I am ${info.name}'s AI assistant. ${info.name} is a full-stack web developer.`;
+      if(q.includes("school")||q.includes("high school")) return `School: ${info.school.name} (${info.school.year})`;
+      if((q.includes("college") && (q.includes("past")||q.includes("completed")||q.includes("bca")))) return `College (completed): ${info.pastCollege.name} — ${info.pastCollege.year}`;
+      if((q.includes("current") && q.includes("college"))||q.includes("present")) return `Current college: ${info.currentCollege.name} — ${info.currentCollege.year}`;
+      if(q.includes("skills")||q.includes("technologies")) return `Skills: ${skills}`;
+      if(q.includes("projects")||q.includes("portfolio")) return `Projects: ${projects_en}`;
+      if(q.includes("contact")||q.includes("phone")||q.includes("email")) return `Contact: ${info.contact.phone} | ${info.contact.email} | ${info.contact.linkedin}`;
+      if((q.includes("open")&&q.includes("work"))|| (q.includes("looking")&& q.includes("job"))) return info.openToWork ? "Harsh is open to work." : "Harsh is not currently looking for work.";
+      if(q.includes("summary")||q.includes("about")) return info.summary_en;
+      return "Sorry — I can only answer questions related to Harsh Kumar (education, skills, projects, contact).";
     }
   }
 
-  /* ======= 4) Elements & behaviour: ensure chat clears on every open/close ======= */
-  const btn = document.getElementById('chatBtn');
-  const box = document.getElementById('chatBox');
-  const closeBtn = document.getElementById('closeChat');
-  const body = document.getElementById('chatBody');
-  const input = document.getElementById('chatInput');
-  const send = document.getElementById('chatSend');
-
-  // Helper to clear chat content
-  function clearChat(){
-    body.innerHTML = "";          // remove old messages
-    // optionally add a fresh greeting each open:
-    const greet = document.createElement('div');
-    greet.className = 'bot';
-    greet.style.maxWidth = '90%';
-    greet.style.padding = '10px';
-    greet.style.borderRadius = '10px';
-    greet.style.background = '#fff';
-    greet.style.border = '1px solid #eee';
-    greet.textContent = "👋 Namaste! Main Harsh Kumar ka AI Assistant hoon. Aap Harsh ke baare me poochh sakte hain.";
-    body.appendChild(greet);
+  // helper: clear and show greeting
+  function clearAndGreet(){
+    body.innerHTML = '';
+    const g = document.createElement('div');
+    g.style.all = 'initial';
+    g.style.maxWidth = '90%';
+    g.style.padding = '10px';
+    g.style.borderRadius = '10px';
+    g.style.background = '#fff';
+    g.style.border = '1px solid #eee';
+    g.style.fontSize = '14px';
+    g.textContent = "👋 Namaste! Main Harsh Kumar ka AI Assistant hoon. Ask me about Harsh (education, skills, projects, contact).";
+    body.appendChild(g);
     body.scrollTop = body.scrollHeight;
   }
 
-  // Open chat: clear previous messages (fresh start)
-  btn.addEventListener('click', ()=>{
-    // toggle visibility: if already open, close and reopen fresh
-    const isOpen = box.style.display === 'flex';
-    if(isOpen){
-      box.style.display = 'none';
-      clearChat(); // ensure cleared when closed
-      // open again immediately fresh
-      setTimeout(()=>{ box.style.display = 'flex'; clearChat(); input.focus(); }, 80);
+  // open/close behavior: always reset on open
+  btn.addEventListener('click', () => {
+    if(win.style.display === 'flex'){
+      // close then reopen fresh
+      win.style.display = 'none';
+      clearAndGreet();
+      setTimeout(()=>{ win.style.display = 'flex'; input.focus(); }, 80);
     } else {
-      box.style.display = 'flex';
-      clearChat();
+      win.style.display = 'flex';
+      clearAndGreet();
       input.focus();
     }
   });
 
-  // Close chat: hide and clear
-  closeBtn.addEventListener('click', ()=>{
-    box.style.display = 'none';
-    clearChat();
+  closeBtn.addEventListener('click', () => {
+    win.style.display = 'none';
+    clearAndGreet();
   });
 
-  // Send handler
+  // send
   send.addEventListener('click', onSend);
-  input.addEventListener('keypress', (e)=>{ if(e.key === 'Enter') onSend(); });
+  input.addEventListener('keypress', (e) => { if(e.key === 'Enter') onSend(); });
 
   function onSend(){
-    const text = input.value.trim();
-    if(!text) return;
-    appendMsg('user', text);
+    const txt = input.value.trim();
+    if(!txt) return;
+    appendMsg('user', txt);
     input.value = '';
-    // quick simulated typing delay
     setTimeout(()=> {
-      const ans = generateAnswer(text);
+      const ans = generateAnswer(txt);
       appendMsg('bot', ans);
-    }, 350);
+    }, 320);
   }
 
-  // Append message to chat body (no persistence)
-  function appendMsg(who, txt){
+  function appendMsg(who, text){
     const el = document.createElement('div');
-    el.textContent = txt;
-    el.style.maxWidth = '85%';
+    el.style.all = 'initial';
+    el.style.maxWidth = '86%';
     el.style.padding = '10px';
     el.style.borderRadius = '10px';
     el.style.fontSize = '14px';
     el.style.lineHeight = '1.4';
     el.style.wordBreak = 'break-word';
+    el.style.marginBottom = '6px';
     if(who === 'user'){
       el.style.alignSelf = 'flex-end';
       el.style.background = '#dbe8ff';
+      el.style.color = '#04102a';
+      el.textContent = text;
     } else {
       el.style.alignSelf = 'flex-start';
       el.style.background = '#fff';
       el.style.border = '1px solid #eee';
+      el.style.color = '#111';
+      el.textContent = text;
     }
     body.appendChild(el);
     body.scrollTop = body.scrollHeight;
   }
 
-  // Initialize: ensure chat is fresh (hidden)
-  box.style.display = 'none';
-  clearChat();
+  // initial clear/greet
+  clearAndGreet();
+  win.style.display = 'none';
+
+  DBG('HK chat initialized successfully.');
 
 })();
 </script>
@@ -523,6 +508,7 @@
 
 <!---------------text change-------------->
  
+
 
 
 
