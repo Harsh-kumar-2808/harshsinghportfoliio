@@ -263,258 +263,234 @@
 </script>
 <!---------------top button-------------->
 <!---------------Chat button-------------->
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Harsh Chat Test</title>
+<!-- ================= HARSH CHAT: RESETTING, MULTILANG, DETAILED INFO ================= -->
 
-  <!-- Font Awesome (icon) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Chat toggle button -->
+<button id="chatBtn" aria-label="Open Harsh Chat" style="position:fixed; right:20px; bottom:20px; z-index:100000;">
+  <i class="fa-regular fa-comment" style="font-size:22px;color:#fff;background:#0b63ff;padding:12px;border-radius:50%"></i>
+</button>
 
-  <!-- === CHAT STYLES (unique names to avoid conflicts) === -->
-  <style>
-    /* container */
-    .hk-chat-btn {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background: #0b63ff;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 55px;
-      height: 55px;
-      font-size: 22px;
-      cursor: pointer;
-      z-index: 100000; /* very high to be on top */
-      box-shadow: 0 6px 24px rgba(11,99,255,0.22);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .hk-chat-btn:hover { transform: scale(1.06); }
-
-    .hk-chat-window {
-      position: fixed;
-      right: 20px;
-      bottom: 90px;
-      width: 360px;
-      max-width: 95%;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 100000;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    .hk-chat-window.hk-active { display: flex; }
-
-    /* header */
-    .hk-chat-header {
-      background: linear-gradient(90deg,#0b63ff,#0a8fff);
-      color: #fff;
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      font-size: 15px;
-    }
-    .hk-chat-close {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    /* body */
-    .hk-chat-body {
-      height: 320px;
-      overflow-y: auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: linear-gradient(180deg,#f7f9ff,#f3f6ff);
-    }
-
-    /* message bubble (explicit colors & sizes) */
-    .hk-msg {
-      max-width: 80%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 14px;
-      line-height: 1.45;
-      box-sizing: border-box;
-      word-wrap: break-word;
-      color: #111 !important; /* force readable text color */
-      -webkit-font-smoothing: antialiased;
-    }
-    .hk-msg.hk-user {
-      background: #dbe8ff;
-      align-self: flex-end;
-      color: #04102a !important;
-      border-bottom-right-radius: 8px;
-    }
-    .hk-msg.hk-bot {
-      background: #ffffff;
-      border: 1px solid #e9eefc;
-      align-self: flex-start;
-      color: #111 !important;
-      border-bottom-left-radius: 8px;
-    }
-
-    /* small meta / note text */
-    .hk-note {
-      font-size: 12px;
-      color: #556;
-      text-align: center;
-      padding: 6px 12px;
-    }
-
-    /* input area */
-    .hk-chat-input {
-      display: flex;
-      gap: 8px;
-      border-top: 1px solid #e7eefc;
-      padding: 8px;
-      background: #fff;
-    }
-    .hk-chat-input input[type="text"]{
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #e6ecff;
-      outline: none;
-      font-size: 14px;
-    }
-    .hk-chat-input button.hk-send {
-      padding: 10px 14px;
-      background: #0b63ff;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    /* make sure scrollbars visible and not overlapped */
-    .hk-chat-body::-webkit-scrollbar { width: 10px; }
-    .hk-chat-body::-webkit-scrollbar-thumb { background: rgba(11,99,255,0.18); border-radius: 8px; }
-
-    @media(max-width:480px){
-      .hk-chat-window { right: 12px; bottom: 80px; width: 92%; }
-      .hk-chat-btn { right: 12px; bottom: 12px; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- ===== CHAT BUTTON ===== -->
-  <button id="hkChatBtn" class="hk-chat-btn" aria-label="Open Harsh Chat">
-    <i class="fa-regular fa-comment"></i>
-  </button>
-
-  <!-- ===== CHAT WINDOW ===== -->
-  <div id="hkChatWindow" class="hk-chat-window" role="dialog" aria-label="Chat with Harsh's Assistant">
-    <div class="hk-chat-header">
-      <div>Chat with Harsh’s Assistant 🤖</div>
-      <button id="hkClose" class="hk-chat-close" aria-label="Close chat">&times;</button>
-    </div>
-
-    <div id="hkBody" class="hk-chat-body" aria-live="polite">
-      <!-- example / initial messages so you can see content immediately -->
-      <div class="hk-msg hk-bot">👋 Hi! I'm Harsh's assistant. Ask me about Harsh's education, skills, projects, or contact info.</div>
-      <div class="hk-msg hk-user">aap kon?</div>
-      <div class="hk-msg hk-bot">I am Harsh Kumar's AI assistant. Harsh is a BCA graduate and a full-stack web developer.</div>
-    </div>
-
-    <div class="hk-chat-input">
-      <input id="hkInput" type="text" placeholder="Ask about Harsh..." aria-label="Type your question"/>
-      <button id="hkSend" class="hk-send">Send</button>
-    </div>
+<!-- Chat window -->
+<div id="chatBox" class="hk-chat-window" style="position:fixed;right:20px;bottom:90px;width:360px;max-width:95%;z-index:100000;display:none;">
+  <div style="background:#0b63ff;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:600;border-radius:10px 10px 0 0;">
+    <div>Chat with Harsh’s Assistant 🤖</div>
+    <button id="closeChat" aria-label="Close chat" style="background:transparent;border:0;color:#fff;font-size:20px;cursor:pointer;">&times;</button>
   </div>
 
-  <!-- ===== SCRIPT: chat logic (local responses only about Harsh) ===== -->
-  <script>
-    (function(){
-      // ------- Data (only about Harsh) -------
-      const RESPONSES = [
-        { keys:["who are you","about harsh","introduce","aap kon"], ans: "I'm Harsh Kumar's AI assistant. Harsh Kumar is a BCA graduate (Study Hall College, 2024) skilled in web development, Java, C++, and Python."},
-        { keys:["education","degree","college","bca","study"], ans: "Education: Bachelor of Computer Applications (BCA) from Study Hall College, completed in 2024."},
-        { keys:["skills","languages","tech","tools"], ans: "Skills: Java, C++, Python, HTML, CSS, JavaScript, React, Node.js, and database management."},
-        { keys:["projects","portfolio","website","work"], ans: "Harsh builds modern responsive websites and full-stack web applications. Check the portfolio section for examples."},
-        { keys:["contact","phone","email"], ans: "Contact: Phone — 6386931879. Email — Mr.harshkumar2808@gmail.com."},
-        { keys:["linkedin","social"], ans: "LinkedIn: www.linkedin.com/in/harsh-kumar-bb8ba8317"},
-        { keys:["job","hire","career"], ans: "Harsh is seeking Full Stack Web Developer roles. He focuses on frontend + backend development."}
-      ];
-      const DEFAULT = "Sorry — I can only answer questions specifically about Harsh Kumar (education, skills, projects, contact).";
+  <div id="chatBody" style="height:320px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,#f7f9ff,#f3f6ff);"></div>
 
-      // ------- Elements -------
-      const btn = document.getElementById('hkChatBtn');
-      const win = document.getElementById('hkChatWindow');
-      const closeBtn = document.getElementById('hkClose');
-      const body = document.getElementById('hkBody');
-      const input = document.getElementById('hkInput');
-      const send = document.getElementById('hkSend');
+  <div style="display:flex;border-top:1px solid #e7eefc;padding:8px;background:#fff;border-radius:0 0 10px 10px;">
+    <input id="chatInput" type="text" placeholder="Harsh ke baare me poochho..." style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6ecff;outline:none;font-size:14px;" />
+    <button id="chatSend" style="background:#0b63ff;color:#fff;border:0;padding:10px 12px;margin-left:8px;border-radius:8px;cursor:pointer;">Send</button>
+  </div>
+</div>
 
-      // Toggle open/close
-      btn.addEventListener('click', () => {
-        win.classList.toggle('hk-active');
-        if(win.classList.contains('hk-active')) {
-          // focus input for convenience
-          input.focus();
-        }
-      });
-      closeBtn.addEventListener('click', () => win.classList.remove('hk-active'));
+<script>
+(function(){
 
-      // send handler
-      send.addEventListener('click', handleSend);
-      input.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSend(); });
+  /* ======= 1) UPDATE THESE DETAILS AS NEEDED =======
+     Edit values below to change what the assistant says about you.
+  ===================================================*/
+  const info = {
+    name: "Harsh Kumar",
+    summary_en: "I am a full-stack web developer with a BCA degree, focused on modern responsive web apps using React and Node.js.",
+    summary_hi: "मैं एक फुल-स्टैक वेब डेवलपर हूँ, BCA डिग्री के साथ। मैं React और Node.js का उपयोग करके आधुनिक वेब ऐप बनाता हूँ।",
+    school: { name: "ABC High School, Fazilka", year: "2018 (Class 12 passed)" },        // change
+    pastCollege: { name: "Study Hall College (BCA - completed)", year: 2024 },          // change
+    currentCollege: { name: "Chandigarh University (MCA - ongoing)", year: "2025 - present" }, // change or remove
+    skills: ["Java", "C++", "Python", "HTML", "CSS", "JavaScript", "React", "Node.js", "MongoDB"],
+    projects: [
+      { title: "Portfolio Website", desc: "Personal portfolio showcasing projects and contact, built with React." },
+      { title: "E-commerce App", desc: "Full-stack e-commerce app with Node.js backend and MongoDB." }
+    ],
+    openToWork: true,
+    contact: { phone: "6386931879", email: "Mr.harshkumar2808@gmail.com", linkedin: "www.linkedin.com/in/harsh-kumar-bb8ba8317" }
+  };
+  /* ======= END of customizable info ======= */
 
-      function handleSend(){
-        const text = input.value.trim();
-        if(!text) return;
-        addMessage('user', text);
-        input.value = '';
-        setTimeout(()=> {
-          const reply = getReply(text);
-          addMessage('bot', reply);
-        }, 300);
-      }
 
-      // matching
-      function getReply(q){
-        const low = q.toLowerCase();
-        for(const r of RESPONSES){
-          for(const k of r.keys){
-            if(low.includes(k)) return r.ans;
-          }
-        }
-        return DEFAULT;
-      }
+  /* ======= 2) Utility: language detection ======= */
+  function detectLanguage(text){
+    const hasDevanagari = /[ऀ-ॿ]/;
+    if(hasDevanagari.test(text)) return "hindi";
+    // simple Hinglish keyword check
+    const hinglishTokens = ["kya","kaise","batao","kon","mera","tum","harsh","ke","hai","kahan","kab","kaunsa","school","college","padha"];
+    const low = text.toLowerCase();
+    for(const t of hinglishTokens) if(low.includes(t)) return "hinglish";
+    return "english";
+  }
 
-      // add message to DOM
-      function addMessage(who, txt){
-        const d = document.createElement('div');
-        d.className = 'hk-msg ' + (who === 'user' ? 'hk-user' : 'hk-bot');
-        d.textContent = txt;
-        body.appendChild(d);
-        body.scrollTop = body.scrollHeight;
-      }
+  /* ======= 3) Answer generator returns string in detected language ======= */
+  function generateAnswer(msg){
+    const lang = detectLanguage(msg);
+    const q = msg.toLowerCase();
 
-      // ensure visible when opened (in case CSS conflicts)
-      // if your site has CSS that hides scrollbars or sets colors globally, this makes the chat appear on top
-      win.style.zIndex = 100000;
-    })();
-  </script>
+    // HELPFUL helpers for building text
+    const skillsList = info.skills.join(", ");
+    const projectsList_en = info.projects.map(p=> `${p.title} — ${p.desc}`).join("; ");
+    const projectsList_hi = info.projects.map(p=> `${p.title} — ${p.desc}`).join(" ; ");
 
-</body>
-</html>
+    // ---------- HINDI ----------
+    if(lang === "hindi"){
+      if(/who|kon|konse|kaun|aap kon/i.test(q) || q.includes("aap kon") || q.includes("kaun")) 
+        return `मैं ${info.name} का एआई असिस्टेंट हूँ। ${info.name} एक फुल-स्टैक वेब डेवलपर हैं।`;
+      if(q.includes("school") || q.includes("school se") || q.includes("kaha padha") || q.includes("school kya"))
+        return `School: ${info.school.name} (${info.school.year}).`;
+      if(q.includes("college") && q.includes("past") || q.includes("pada") || q.includes("completed") || q.includes("bca") || q.includes("pastcollege"))
+        return `College (completed): ${info.pastCollege.name} — ${info.pastCollege.year}.`;
+      if(q.includes("abhi") || q.includes("current") || q.includes("chal raha") || q.includes("current college") || q.includes("present"))
+        return `Current college / studies: ${info.currentCollege.name} — ${info.currentCollege.year}.`;
+      if(q.includes("skill") || q.includes("kya aata") || q.includes("ky aata") || q.includes("kya kar sakte"))
+        return `Skills: ${skillsList}.`;
+      if(q.includes("project") || q.includes("portfolio") || q.includes("website"))
+        return `प्रोजेक्ट्स: ${projectsList_hi}`;
+      if(q.includes("contact") || q.includes("phone") || q.includes("email") || q.includes("sampark"))
+        return `संपर्क: फ़ोन ${info.contact.phone}, ईमेल ${info.contact.email}. LinkedIn: ${info.contact.linkedin}`;
+      if(q.includes("open") && q.includes("work") || q.includes("naukri") || q.includes("job"))
+        return info.openToWork ? "हाँ — Harsh नौकरी के लिए खुला है।" : "अभी Harsh नौकरी की तलाश में नहीं हैं।";
+      if(q.includes("summary") || q.includes("baare") || q.includes("bataye") || q.includes("ka kare"))
+        return info.summary_hi || "मैं एक वेब डेवलपर हूँ — अधिक जानकारी के लिए पूछें।";
+      // fallback
+      return "माफ़ कीजिये — मैं केवल हर्ष कुमार के बारे में जानकारी दे सकता हूँ। कृपया हर्ष से जुड़ा प्रश्न पूछें।";
+    }
+
+    // ---------- HINGLISH ----------
+    if(lang === "hinglish"){
+      if(q.includes("kon") || q.includes("kaun") || q.includes("aap kon"))
+        return `Main ${info.name} ka AI assistant hoon. ${info.name} ek full-stack web developer hain.`;
+      if(q.includes("school") || q.includes("kahan padha") || q.includes("school kya"))
+        return `School: ${info.school.name} (${info.school.year}).`;
+      if(q.includes("college") && (q.includes("past") || q.includes("complete") || q.includes("bca") || q.includes("pura")))
+        return `Past college: ${info.pastCollege.name} — ${info.pastCollege.year}.`;
+      if(q.includes("current") || q.includes("abhi") || q.includes("present"))
+        return `Current college: ${info.currentCollege.name} — ${info.currentCollege.year}.`;
+      if(q.includes("skill") || q.includes("kya aata") || q.includes("kya kar sakta"))
+        return `Skills: ${skillsList}.`;
+      if(q.includes("project") || q.includes("portfolio"))
+        return `Projects: ${projectsList_en}`;
+      if(q.includes("contact") || q.includes("number") || q.includes("mail"))
+        return `Contact: ${info.contact.phone} | ${info.contact.email} | ${info.contact.linkedin}`;
+      if(q.includes("open") && q.includes("work") || q.includes("naukri") || q.includes("job"))
+        return info.openToWork ? "Yes — Harsh is open to work." : "Harsh is not looking for work right now.";
+      if(q.includes("summary") || q.includes("baare") || q.includes("about"))
+        return info.summary_en;
+      return "Main sirf Harsh Kumar ke baare mein bata sakta hoon — please ask about Harsh.";
+    }
+
+    // ---------- ENGLISH ----------
+    if(lang === "english"){
+      if(/who|what|introduce/.test(q) || q.includes("who are you"))
+        return `I am ${info.name}'s AI assistant. ${info.name} is a full-stack web developer.`;
+      if(q.includes("school") || q.includes("high school") || q.includes("where did he study school"))
+        return `School: ${info.school.name} (${info.school.year}).`;
+      if(q.includes("past") && q.includes("college") || q.includes("bca") || q.includes("completed"))
+        return `College (completed): ${info.pastCollege.name} — ${info.pastCollege.year}.`;
+      if(q.includes("current") && q.includes("college") || q.includes("present") || q.includes("now studying"))
+        return `Current college / studies: ${info.currentCollege.name} — ${info.currentCollege.year}.`;
+      if(q.includes("skills") || q.includes("technologies") || q.includes("can do"))
+        return `Skills: ${skillsList}.`;
+      if(q.includes("projects") || q.includes("portfolio"))
+        return `Projects: ${projectsList_en}`;
+      if(q.includes("contact") || q.includes("email") || q.includes("phone"))
+        return `Contact: ${info.contact.phone} | ${info.contact.email} | ${info.contact.linkedin}`;
+      if(q.includes("open") && q.includes("work") || q.includes("looking") && q.includes("job"))
+        return info.openToWork ? "Harsh is open to work." : "Harsh is not currently looking for work.";
+      if(q.includes("summary") || q.includes("about"))
+        return info.summary_en;
+      return "Sorry — I can only answer questions related to Harsh Kumar. Please ask about his education, skills, projects or contact.";
+    }
+  }
+
+  /* ======= 4) Elements & behaviour: ensure chat clears on every open/close ======= */
+  const btn = document.getElementById('chatBtn');
+  const box = document.getElementById('chatBox');
+  const closeBtn = document.getElementById('closeChat');
+  const body = document.getElementById('chatBody');
+  const input = document.getElementById('chatInput');
+  const send = document.getElementById('chatSend');
+
+  // Helper to clear chat content
+  function clearChat(){
+    body.innerHTML = "";          // remove old messages
+    // optionally add a fresh greeting each open:
+    const greet = document.createElement('div');
+    greet.className = 'bot';
+    greet.style.maxWidth = '90%';
+    greet.style.padding = '10px';
+    greet.style.borderRadius = '10px';
+    greet.style.background = '#fff';
+    greet.style.border = '1px solid #eee';
+    greet.textContent = "👋 Namaste! Main Harsh Kumar ka AI Assistant hoon. Aap Harsh ke baare me poochh sakte hain.";
+    body.appendChild(greet);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // Open chat: clear previous messages (fresh start)
+  btn.addEventListener('click', ()=>{
+    // toggle visibility: if already open, close and reopen fresh
+    const isOpen = box.style.display === 'flex';
+    if(isOpen){
+      box.style.display = 'none';
+      clearChat(); // ensure cleared when closed
+      // open again immediately fresh
+      setTimeout(()=>{ box.style.display = 'flex'; clearChat(); input.focus(); }, 80);
+    } else {
+      box.style.display = 'flex';
+      clearChat();
+      input.focus();
+    }
+  });
+
+  // Close chat: hide and clear
+  closeBtn.addEventListener('click', ()=>{
+    box.style.display = 'none';
+    clearChat();
+  });
+
+  // Send handler
+  send.addEventListener('click', onSend);
+  input.addEventListener('keypress', (e)=>{ if(e.key === 'Enter') onSend(); });
+
+  function onSend(){
+    const text = input.value.trim();
+    if(!text) return;
+    appendMsg('user', text);
+    input.value = '';
+    // quick simulated typing delay
+    setTimeout(()=> {
+      const ans = generateAnswer(text);
+      appendMsg('bot', ans);
+    }, 350);
+  }
+
+  // Append message to chat body (no persistence)
+  function appendMsg(who, txt){
+    const el = document.createElement('div');
+    el.textContent = txt;
+    el.style.maxWidth = '85%';
+    el.style.padding = '10px';
+    el.style.borderRadius = '10px';
+    el.style.fontSize = '14px';
+    el.style.lineHeight = '1.4';
+    el.style.wordBreak = 'break-word';
+    if(who === 'user'){
+      el.style.alignSelf = 'flex-end';
+      el.style.background = '#dbe8ff';
+    } else {
+      el.style.alignSelf = 'flex-start';
+      el.style.background = '#fff';
+      el.style.border = '1px solid #eee';
+    }
+    body.appendChild(el);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // Initialize: ensure chat is fresh (hidden)
+  box.style.display = 'none';
+  clearChat();
+
+})();
+</script>
 
 <!---------------Chat button-------------->
 
@@ -547,6 +523,7 @@
 
 <!---------------text change-------------->
  
+
 
 
 
